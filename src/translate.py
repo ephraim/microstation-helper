@@ -1,6 +1,7 @@
 import os
 import sys
 import csv
+from openpyxl import load_workbook
 import argparse
 
 
@@ -18,35 +19,34 @@ def main(inputFilePath, outputFilepath):
         { "ms_nr": 12, "ms_name": "Transparency", "name": "Transparenz", "nr": 6 }
     ]
 
-    with open(inputFilePath, mode='r') as csvfile:
-        with open(outputFilepath, mode='w', newline='') as outfile:
-            layerDefinition = csv.reader(csvfile, delimiter=';')
-            output = csv.writer(outfile, delimiter=',')
+    with open(outputFilepath, mode='w', newline='') as outfile:
+        xlsx = load_workbook(inputFilePath)
+        output = csv.writer(outfile, delimiter=',')
 
-            output.writerow(["%SECTION","Levels"])
-            output.writerow("")
-            output.writerow(columnNames)
+        output.writerow(["%SECTION","Levels"])
+        output.writerow("")
+        output.writerow(columnNames)
 
-            lastPrefix = ""
-            for row in layerDefinition:
-                if row[0]:
-                    lastPrefix = row[0]
-                newrow = columnDefault
-                for m in columnMapping:
-                    val = row[m["nr"]]
-                    if m["ms_nr"] == 0:
-                        val = f"{lastPrefix}{val}"
-                    newrow[m["ms_nr"]] = val
-                output.writerow(newrow)
+        lastPrefix = ""
+        for row in xlsx.active.iter_rows(min_row=3):
+            if row[0].value:
+                lastPrefix = row[0].value
+            newrow = columnDefault
+            for m in columnMapping:
+                val = row[m["nr"]].value
+                if m["ms_nr"] == 0:
+                    val = f"{lastPrefix}{val}"
+                newrow[m["ms_nr"]] = val
+            output.writerow(newrow)
 
-            output.writerow("")
-            output.writerow(["%SECTION","level-filter"])
-            output.writerow("")
-            output.writerow(["filter-name","filter-parent","level-group","filter-compose","level-name","level-code","level-description","level-color","level-style","level-weight","level-material","level-element-color","level-element-style","level-element-weight","level-element-material","level-display","level-frozen","level-priority","level-plot","level-used","level-transparency","level-element-access"])
+        output.writerow("")
+        output.writerow(["%SECTION","level-filter"])
+        output.writerow("")
+        output.writerow(["filter-name","filter-parent","level-group","filter-compose","level-name","level-code","level-description","level-color","level-style","level-weight","level-material","level-element-color","level-element-style","level-element-weight","level-element-material","level-display","level-frozen","level-priority","level-plot","level-used","level-transparency","level-element-access"])
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--output", help="Ausgabedatei")
-parser.add_argument("--input", help="Eingabedatei")
+parser.add_argument("--output", help="Ausgabedatei (*.csv)")
+parser.add_argument("--input", help="Ebenendefinitions-Datei (*.xlsx)")
 parser.add_argument("--version", help="Version anzeigen", action="store_true")
 args = parser.parse_args()
 
