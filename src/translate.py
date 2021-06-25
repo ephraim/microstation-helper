@@ -7,7 +7,7 @@ import argparse
 
 __VERSION__ = "0.0.1"
 
-def main(inputFilePath, outputFilepath):
+def main(inputFilePath, outputPath):
     columnNames=["Name","Number","Description","OverrideColor","OverrideStyle","OverrideWeight","OverrideMaterial","ByLevelColor","ByLevelStyle","ByLevelWeight","ByLevelMaterial","DisplayPriority","Transparency","GlobalDisplay","GlobalFreeze","ElementAccess","Plot","OverrideStyleScale","OverrideStyleOriginWidth","OverrideStyleEndWidth","ByLevelStyleScale","ByLevelStyleOriginWidth","ByLevelStyleEndWidth"]
     columnDefault=["", 0, "", 0, 0, 0, None, 0, 0, 0, None, 0, 0.000000, 1, 0, 0, 1, "", "", "", "", "", ""]
     columnMapping=[
@@ -19,33 +19,35 @@ def main(inputFilePath, outputFilepath):
         { "ms_nr": 12, "ms_name": "Transparency", "name": "Transparenz", "nr": 6 }
     ]
 
-    with open(outputFilepath, mode='w', newline='') as outfile:
-        xlsx = load_workbook(inputFilePath)
-        output = csv.writer(outfile, delimiter=',')
+    xlsx = load_workbook(inputFilePath)
+    for sheet in xlsx:
+        print(f"processing worksheet \"{sheet.title}\" ...")
+        with open(f"{outputPath}\\{sheet.title}.csv", mode='w', newline='') as outfile:
+            output = csv.writer(outfile, delimiter=',')
 
-        output.writerow(["%SECTION","Levels"])
-        output.writerow("")
-        output.writerow(columnNames)
+            output.writerow(["%SECTION","Levels"])
+            output.writerow("")
+            output.writerow(columnNames)
 
-        lastPrefix = ""
-        for row in xlsx.active.iter_rows(min_row=3):
-            if row[0].value:
-                lastPrefix = row[0].value
-            newrow = columnDefault
-            for m in columnMapping:
-                val = row[m["nr"]].value
-                if m["ms_nr"] == 0:
-                    val = f"{lastPrefix}{val}"
-                newrow[m["ms_nr"]] = val
-            output.writerow(newrow)
+            lastPrefix = ""
+            for row in sheet.iter_rows(min_row=3):
+                if row[0].value:
+                    lastPrefix = row[0].value
+                newrow = columnDefault
+                for m in columnMapping:
+                    val = row[m["nr"]].value
+                    if m["ms_nr"] == 0:
+                        val = f"{lastPrefix}{val}"
+                    newrow[m["ms_nr"]] = val
+                output.writerow(newrow)
 
-        output.writerow("")
-        output.writerow(["%SECTION","level-filter"])
-        output.writerow("")
-        output.writerow(["filter-name","filter-parent","level-group","filter-compose","level-name","level-code","level-description","level-color","level-style","level-weight","level-material","level-element-color","level-element-style","level-element-weight","level-element-material","level-display","level-frozen","level-priority","level-plot","level-used","level-transparency","level-element-access"])
+            output.writerow("")
+            output.writerow(["%SECTION","level-filter"])
+            output.writerow("")
+            output.writerow(["filter-name","filter-parent","level-group","filter-compose","level-name","level-code","level-description","level-color","level-style","level-weight","level-material","level-element-color","level-element-style","level-element-weight","level-element-material","level-display","level-frozen","level-priority","level-plot","level-used","level-transparency","level-element-access"])
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--output", help="Ausgabedatei (*.csv)")
+parser.add_argument("--output-dir", help="Ausgabeverzeichniss, hier werden die Microstation CSV's erstellt", default=".")
 parser.add_argument("--input", help="Ebenendefinitions-Datei (*.xlsx)")
 parser.add_argument("--version", help="Version anzeigen", action="store_true")
 args = parser.parse_args()
@@ -58,8 +60,4 @@ if not args.input:
     print("Bitte input Datei angeben")
     sys.exit(0)
 
-if not args.output:
-    print("Bitte output Datei angeben")
-    sys.exit(0)
-
-main(args.input, args.output)
+main(args.input, args.output_dir)
