@@ -47,7 +47,7 @@ def main(inputFilePath, outputPath):
             output.writerow(["filter-name","filter-parent","level-group","filter-compose","level-name","level-code","level-description","level-color","level-style","level-weight","level-material","level-element-color","level-element-style","level-element-weight","level-element-material","level-display","level-frozen","level-priority","level-plot","level-used","level-transparency","level-element-access"])
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--output-dir", help="Ausgabeverzeichniss, hier werden die Microstation CSV's erstellt", default=".")
+parser.add_argument("--output-dir", help="Ausgabeverzeichniss", default=os.getcwd())
 parser.add_argument("--input", help="Ebenendefinitions-Datei (*.xlsx)")
 parser.add_argument("--version", help="Version anzeigen", action="store_true")
 args = parser.parse_args()
