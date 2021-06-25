@@ -35,9 +35,13 @@ def main(inputFilePath, outputPath):
                     lastPrefix = row[0].value
                 newrow = columnDefault
                 for m in columnMapping:
-                    val = row[m["nr"]].value
+                    val = ""
+                    if row[m["nr"]].value:
+                        val = row[m["nr"]].value
+
                     if m["ms_nr"] == 0:
                         val = f"{lastPrefix}{val}"
+
                     newrow[m["ms_nr"]] = val
                 output.writerow(newrow)
 
